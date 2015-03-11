@@ -85,6 +85,14 @@ CALL cutest_ufn(st, n, x, f)
   \end{itemize}
 \end{frame}
 
+\newcommand{\testerrorfix}[2]{
+  \node[draw,rectangle,right of={#1},node distance=10em] (test) {Test};
+  \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
+  \draw[->] (#1) -- (test);
+  \draw[->] (test) -- (error);
+  \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} ({#1});
+  \draw[->] (error) to[out=270,in=-2] (#2);
+}
 \begin{frame}
   \ctr{Workflow}
   \begin{center}
@@ -93,26 +101,13 @@ CALL cutest_ufn(st, n, x, f)
     \node[draw,rectangle,above of=start] (base) {Set up Julia base};
     \node[draw,rectangle,below of=start] (impLA) {Improve Linear Algebra};
     \node[draw,rectangle,below of=impLA] (impcode) {Improve your code};
-    \node[draw,rectangle,below of=impcode] (low.level) {Send something to
+    \node[draw,rectangle,below of=impcode] (lowlevel) {Send something to
       C/Fortran};
     \draw[->] (base) -- (start);
 
-    \onslide<1>{
-      \node[draw,rectangle,right of=start,node distance=10em] (test) {Test};
-      \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
-      \draw[->] (start) -- (test);
-      \draw[->] (test) -- (error);
-      \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} (start);
-      \draw[->] (error) to[out=270,in=-2] (impLA);
-    }
-    \onslide<2>{
-      \node[draw,rectangle,right of=start,node distance=10em] (test) {Test};
-      \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
-      \draw[->] (start) -- (test);
-      \draw[->] (test) -- (error);
-      \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} (start);
-      \draw[->] (error) to[out=270,in=-2] (impLA);
-    }
+    \onslide<1>{ \testerrorfix{start}{impLA} }
+    \onslide<2>{ \testerrorfix{impLA}{impcode} }
+    \onslide<3>{ \testerrorfix{impcode}{lowlevel} }
   \end{tikzpicture}
   \end{center}
 \end{frame}
