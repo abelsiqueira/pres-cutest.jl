@@ -86,12 +86,10 @@ CALL cutest_ufn(st, n, x, f)
 \end{frame}
 
 \newcommand{\testerrorfix}[2]{
-  \node[draw,rectangle,right of={#1},node distance=10em] (test) {Test};
-  \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
-  \draw[->] (#1) -- (test);
-  \draw[->] (test) -- (error);
-  \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} ({#1});
-  \draw[->] (error) to[out=270,in=-2] (#2);
+  \node[draw,rectangle,right of={#1},node distance=12em] (test) {Test};
+  \draw[->] (#1) to[out=0,in=180] (test);
+  \draw[->,dashed] (test) to[out=200,in=-4] (#1);
+  \draw[->] (test) to[out=200,in=4] (#2);
 }
 \begin{frame}
   \ctr{Workflow}
@@ -99,15 +97,29 @@ CALL cutest_ufn(st, n, x, f)
   \begin{tikzpicture}
     \node[draw,rectangle] (start) {Least amount of code};
     \node[draw,rectangle,above of=start] (base) {Set up Julia base};
-    \node[draw,rectangle,below of=start] (impLA) {Improve Linear Algebra};
-    \node[draw,rectangle,below of=impLA] (impcode) {Improve your code};
-    \node[draw,rectangle,below of=impcode] (lowlevel) {Send something to
-      C/Fortran};
+    \onslide<2->{
+      \node[draw,rectangle,below of=start] (impLA) {Improve Linear Algebra};
+      \testerrorfix{start}{impLA}
+    }
+    \onslide<3->{
+      \node[draw,rectangle,below of=impLA] (impcode) {Improve your code};
+      \testerrorfix{impLA}{impcode}
+    }
+    \onslide<4->{
+      \node[draw,rectangle,below of=impcode] (lowlevel) {Implement parts in
+        C/Fortran};
+      \testerrorfix{impcode}{lowlevel}
+    }
+    \onslide<5->{
+      \node[draw,rectangle,below of=lowlevel] (lowlevel2) {Complete C/Fortran};
+      \testerrorfix{lowlevel}{lowlevel2}
+    }
     \draw[->] (base) -- (start);
 
-    \onslide<1>{ \testerrorfix{start}{impLA} }
-    \onslide<2>{ \testerrorfix{impLA}{impcode} }
-    \onslide<3>{ \testerrorfix{impcode}{lowlevel} }
+    \onslide<6->{ \node[draw,rectangle,below left of=test,node distance=6em]
+        (end) {End};
+      \testerrorfix{lowlevel2}{end};
+    }
   \end{tikzpicture}
   \end{center}
 \end{frame}
