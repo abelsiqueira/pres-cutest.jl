@@ -7,6 +7,7 @@
 \usepackage{listings}
 \usepackage{epsfig}
 \usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
 \usepackage{pgfplots}
 \usepackage{colordef}
 \pgfplotsset{compat=newest}
@@ -109,3 +110,10 @@
 
 \newcommand{\bashgt}{ \textgreater\ }
 \newcommand{\ddash}{-{}-}
+
+\lstset{
+  basicstyle=\tt\small,
+  breaklines=true,
+  frame=single,
+  extendedchars=true
+}

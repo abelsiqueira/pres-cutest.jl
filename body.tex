@@ -1,43 +1,118 @@
-\begin{frame}[fragile]
-  \ctr{Exemplo de Slide}
-
+\myframe{
+  \ctr{Summary}
   \begin{itemize}
-    \item Para inserção de conteúdo, edite apenas o arquivo \texttt{body.tex}.
-    \item Se quiser mudar a cor base, edite no arquivo \texttt{main.tex} a
-    definição de \texttt{mybasecolor}.
-    \item Existem três tipos básicos de slides: o \verb+\myframe[1]+, o
-    \verb+\myframeblack[1]+, e o \verb+\myframecolor[2]+.
-    \item Nenhum desses frames usa a opção \verb+fragile+. Se for necessário,
-    crie um slide do modo tradicional.
+    \item Julia
+    \item CUTEst
+    \item Code fast and test
+    \item Improve linear algebra
+    \item Improve CUTEst calls
+    \item Go down
   \end{itemize}
-\end{frame}
+}
 
-\myframeblack{
-  \ctrwhite{Exemplo de Slide}
-
+\myframe{
+  \ctr{Julia}
   \begin{itemize}
-    \item {\color{white}O slide anterior era um frame com fragile. O
-      \texttt{myframe} é um slide normal, sem fragile.}
-    \item {\color{white}Este é um \texttt{myframeblack}, bom para comandos do
-      terminal e afins.}
-    \item {\color{white}O \texttt{myframecolor}, aceita um argumento adicional
-    da cor que deve ter o background. }
-    \item {\color{white}Note que a cor de texto normal é black, então é preciso
-    setar manualmente a cor branca.}
+    \item High level, High performance
+    \item Great C/Fortran interface
+    \item Easy syntax
   \end{itemize}
 }
 
 \begin{frame}[fragile]
-  \ctr{Exemplo de Slide}
+  \ctr{Julia}
+\begin{lstlisting}
+$ julia
+julia> A = rand(1000,1000);
+julia> b = A*ones(1000);
+julia> x = A\b;
+julia> norm(A*x-b) + norm(x-ones(1000))
+3.075209255065141e-11
+\end{lstlisting}
+\end{frame}
 
+\begin{frame}[fragile]
+  \ctr{Julia}
+\begin{lstlisting}
+julia> f(x) = x.^2
+julia> t = rand(1000);
+julia> y = [f(x) for x in t]
+julia> z = zeros(t)
+julia> for i = 1:length(t)
+julia>     z[i] = f(t[i]);
+julia> end
+julia> w = f(t);
+julia> norm(y-z)+norm(z-w)
+0.0
+\end{lstlisting}
+\end{frame}
+
+\myframe{
+  \ctr{CUTEst}
   \begin{itemize}
-    \item O título da página é feito com o comando \verb+\ctr+. O texto fica
-      negrito e centralizado.
-    \item Assim como o slide, temos o \verb+\ctrwhite+ e \verb+\ctrcolor+.
-    \item Temos também o comando \verb+\cmd+; que gera um comando do terminal em
-      amarelo; o comando \verb+\cmdinline+, que serve apenas como um \verb+\tt+
-      de cor amarela; o comando \verb+\cmmt+, que gera um comentário inline no
-      formato bash; o comando \verb+\bashgt+, que gera \bashgt; e o comando
-      \verb+\ddash+, que gera \ddash.
+    \item Repository of Nonlinear Optimization problems;
+    \item Provides subroutines to obtain the problem informations;
+    \item Decodes the problem, compiles your code with the problem's and run
+      your main code;
+    \item Widely used.
   \end{itemize}
+}
+
+\begin{frame}[fragile]
+  \ctr{CUTEst}
+\begin{lstlisting}
+CALL cutest_cdimen(st, ifile, n, m)
+if (m.GT.0) THEN
+  STOP
+ENDIF
+CALL cutest_usetup(st, ifile, 7, 11, n, x, bl, bu)
+CALL cutest_ufn(st, n, x, f)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \ctr{CUTEst.jl}
+  \begin{itemize}
+    \item CUTEst interfaces in Julia
+    \item Core interface
+      \begin{lstlisting}
+      CUTEst.ufn(st, n, x, f, libname)
+      \end{lstlisting}
+    \item Easy interface
+      \begin{lstlisting}
+      f = CUTEst.obj(nlp, x)
+      \end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \ctr{Workflow}
+  \begin{center}
+  \begin{tikzpicture}
+    \node[draw,rectangle] (start) {Least amount of code};
+    \node[draw,rectangle,above of=start] (base) {Set up Julia base};
+    \node[draw,rectangle,below of=start] (impLA) {Improve Linear Algebra};
+    \node[draw,rectangle,below of=impLA] (impcode) {Improve your code};
+    \node[draw,rectangle,below of=impcode] (low.level) {Send something to
+      C/Fortran};
+    \draw[->] (base) -- (start);
+
+    \onslide<1>{
+      \node[draw,rectangle,right of=start,node distance=10em] (test) {Test};
+      \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
+      \draw[->] (start) -- (test);
+      \draw[->] (test) -- (error);
+      \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} (start);
+      \draw[->] (error) to[out=270,in=-2] (impLA);
+    }
+    \onslide<2>{
+      \node[draw,rectangle,right of=start,node distance=10em] (test) {Test};
+      \node[draw,diamond,right of=test,node distance=6em] (error) {Error?};
+      \draw[->] (start) -- (test);
+      \draw[->] (test) -- (error);
+      \draw[->] (error) to[out=90,in=2] node[midway,above] {Fix} (start);
+      \draw[->] (error) to[out=270,in=-2] (impLA);
+    }
+  \end{tikzpicture}
+  \end{center}
 \end{frame}
