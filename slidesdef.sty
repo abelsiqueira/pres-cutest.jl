@@ -16,7 +16,7 @@
 
 \useinnertheme{rounded}
 \setbeamercolor{structure}{fg = myitemcolor}
-\useoutertheme{infolines}
+\useoutertheme{smoothbars}
 
 \setbeamercolor{mainbox}{bg=mydarkercolor, fg=mylightcolor}
 \setbeamercolor{secbox}{bg=mydarkcolor, fg=mylightcolor}
@@ -26,7 +26,12 @@
 \setbeamercolor{palette tertiary} {bg=mydarkercolor,fg=mylightcolor}
 \setbeamercolor{palette fourth}   {bg=mydarkcolor,fg=mylightcolor}
 \setbeamercolor{title}{bg = mytitlebg,fg = mytitlefg}
+\setbeamercolor{frametitle}{bg = mydarkcolor, fg=mylightcolor}
+\setbeamercolor{section in head/foot}{bg = mydarkestcolor, fg = mylightcolor}
+\setbeamercolor{subsection in head/foot}{bg = mydarkcolor, fg = mylightcolor}
+
 \setbeamerfont{title}{series = \bf}
+%\setbeamerfont{subsection in head/foot}{series = \bf\large}
 \usefonttheme[onlymath]{serif}
 \logo{Logo}
 
@@ -48,18 +53,22 @@
 }
 \newcommand{\myframe}[1]{
 \begin{frame}
- %\frametitle{\insertsection \qquad {\small \insertsubsection}}
 
 {#1}
 
 \end{frame}}
+\newcommand{\myframectr}[1]{
+  \myframe{ \ctr{\insertsubsection} #1 }
+}
 \newcommand{\myframetop}[1]{
 \begin{frame}[t]
- %\frametitle{\insertsection \qquad {\small \insertsubsection}}
 
 {#1}
 
 \end{frame}}
+\newcommand{\myframetopctr}[1]{
+  \myframetop{ \ctr{\insertsubsection} #1 }
+}
 \newcommand{\myframecolor}[2]{
   \setbeamercolor{background canvas}{bg = #1}
   \myframe{
@@ -92,7 +101,6 @@
 \newcommand{\ctr}[1]{\begin{center}{\bf #1}\vspace{0.2 cm}\end{center}}
 \newcommand{\ctrcolor}[2]{\begin{center}{\bf \color{#1} #2}\vspace{0.2 cm}\end{center}}
 \newcommand{\ctrwhite}[1]{\begin{center}{\bf \color{white} #1}\vspace{0.2 cm}\end{center}}
-%\newcommand{\ctr}[1]{\frametitle{#1}}
 
 \setbeamercolor{background canvas}{bg = mylightcolor}
 

@@ -1,17 +1,15 @@
-\myframe{
-  \ctr{Summary}
-  \begin{itemize}
-    \item Julia
-    \item CUTEst
-    \item Code fast and test
-    \item Improve linear algebra
-    \item Improve CUTEst calls
-    \item Go down
-  \end{itemize}
+\AtBeginSection[]
+{
+  \begin{frame}
+    \tableofcontents[currentsection]
+  \end{frame}
 }
 
-\myframe{
-  \ctr{Julia}
+\section{Introduction}
+
+\subsection{Julia}
+
+\myframectr{
   \begin{itemize}
     \item High level, High performance
     \item Great C/Fortran interface
@@ -19,48 +17,35 @@
   \end{itemize}
 }
 
-\begin{frame}[fragile]
-  \ctr{Julia}
-\begin{lstlisting}
-$ julia
-julia> A = rand(1000,1000);
-julia> b = A*ones(1000);
-julia> x = A\b;
-julia> norm(A*x-b) + norm(x-ones(1000))
-3.075209255065141e-11
-\end{lstlisting}
-\end{frame}
+\subsection{CUTEst}
 
-\begin{frame}[fragile]
-  \ctr{Julia}
-\begin{lstlisting}
-julia> f(x) = x.^2
-julia> t = rand(1000);
-julia> y = [f(x) for x in t]
-julia> z = zeros(t)
-julia> for i = 1:length(t)
-julia>     z[i] = f(t[i]);
-julia> end
-julia> w = f(t);
-julia> norm(y-z)+norm(z-w)
-0.0
-\end{lstlisting}
-\end{frame}
-
-\myframe{
-  \ctr{CUTEst}
+\myframectr{
   \begin{itemize}
     \item Repository of Nonlinear Optimization problems;
-    \item Provides subroutines to obtain the problem informations;
-    \item Decodes the problem, compiles your code with the problem's and run
+    \item Provides subroutines to obtain the problem's information;
+    \item Decodes the problem, compiles your code with the problem's and runs
       your main code;
     \item Widely used.
   \end{itemize}
 }
 
-\begin{frame}[fragile]
+\subsection{CUTEst.jl}
+
+\myframectr{
+  \begin{itemize}
+    \item Easy to install;
+    \item Easy to use;
+    \item Easy to optimize;
+  \end{itemize}
+}
+
+\section{Why CUTEst.jl}
+
+\subsection{CUTEst}
+
+\begin{frame}[t,fragile]
   \ctr{CUTEst}
-\begin{lstlisting}
+\begin{lstlisting}[language=Fortran]
 CALL cutest_cdimen(st, ifile, n, m)
 if (m.GT.0) THEN
   STOP
@@ -70,56 +55,80 @@ CALL cutest_ufn(st, n, x, f)
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}[fragile]
+\begin{frame}[t,fragile]
   \ctr{CUTEst.jl}
-  \begin{itemize}
-    \item CUTEst interfaces in Julia
-    \item Core interface
-      \begin{lstlisting}
-      CUTEst.ufn(st, n, x, f, libname)
-      \end{lstlisting}
-    \item Easy interface
-      \begin{lstlisting}
-      f = CUTEst.obj(nlp, x)
-      \end{lstlisting}
-  \end{itemize}
+\begin{lstlisting}
+using CUTEst
+
+nlp = CUTEstModel("ROSENBR")
+x = nlp.meta.x0
+
+f = obj(nlp, x)
+\end{lstlisting}
 \end{frame}
 
-\newcommand{\testerrorfix}[2]{
-  \node[draw,rectangle,right of={#1},node distance=12em] (test) {Test};
-  \draw[->] (#1) to[out=0,in=180] (test);
-  \draw[->,dashed] (test) to[out=200,in=-4] (#1);
-  \draw[->] (test) to[out=200,in=4] (#2);
+\begin{frame}[t,fragile]
+\lstinputlisting{src/newton.jl}
+\begin{lstlisting}
+f(x) = obj(nlp, x)
+g(x) = grad(nlp, x)
+H(x) = hess(nlp, x)
+x = newton(f, g, H, nlp.meta.x0)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\lstinputlisting{src/newton.jl}
+\begin{lstlisting}
+f(x) = ufn(nlp, x) # Familiar names
+g(x) = ugr(nlp, x) # are here too
+H(x) = udh(nlp, x, nlp.meta.nvar)
+x = newton(f, g, H, nlp.meta.x0)
+\end{lstlisting}
+\end{frame}
+
+\subsection{Memory efficient}
+
+\begin{frame}[t,fragile]
+\lstinputlisting{src/newtoninplace.jl}
+\end{frame}
+
+\begin{frame}[t,fragile]
+\begin{lstlisting}
+f(x) = ufn(nlp, x)
+g!(x, gx) = ugr!(nlp, x, gx)
+H!(x, Hx) = udh!(nlp, x, nlp.meta.nvar, Hx)
+x = newton(f, g!, H!, nlp.meta.x0)
+\end{lstlisting}
+\end{frame}
+
+\subsection{The Fortran wrapper}
+
+\begin{frame}[t,fragile]
+\begin{lstlisting}
+io_err = Cint[0]
+n = Cint[nlp.meta.nvar]
+f = [0.0]
+ufn(io_err, n, x, f)
+\end{lstlisting}
+\end{frame}
+
+\section{Workflow}
+
+\myframe{
+   ``... We should forget about the small efficiencies, say about 97\% of the
+    time: {\bf premature optimization is the root of all evil}...'' \\
+    Donald Knuth
 }
-\begin{frame}
-  \ctr{Workflow}
-  \begin{center}
-  \begin{tikzpicture}
-    \node[draw,rectangle] (start) {Least amount of code};
-    \node[draw,rectangle,above of=start] (base) {Set up Julia base};
-    \onslide<2->{
-      \node[draw,rectangle,below of=start] (impLA) {Improve Linear Algebra};
-      \testerrorfix{start}{impLA}
-    }
-    \onslide<3->{
-      \node[draw,rectangle,below of=impLA] (impcode) {Improve your code};
-      \testerrorfix{impLA}{impcode}
-    }
-    \onslide<4->{
-      \node[draw,rectangle,below of=impcode] (lowlevel) {Implement parts in
-        C/Fortran};
-      \testerrorfix{impcode}{lowlevel}
-    }
-    \onslide<5->{
-      \node[draw,rectangle,below of=lowlevel] (lowlevel2) {Complete C/Fortran};
-      \testerrorfix{lowlevel}{lowlevel2}
-    }
-    \draw[->] (base) -- (start);
 
-    \onslide<6->{ \node[draw,rectangle,below left of=test,node distance=6em]
-        (end) {End};
-      \testerrorfix{lowlevel2}{end};
-    }
-  \end{tikzpicture}
-  \end{center}
-\end{frame}
+\subsection{Test Driven Development}
+
+\myframe{
+  \begin{itemize}
+    \item {\it Create a failing test; Fix the test; Refactor code; Repeat.}
+    \item Optimization doesn't have small building blocks;
+    \item Simplest problem you should solve;
+  \end{itemize}
+}
+
+\subsection{Thanks}
