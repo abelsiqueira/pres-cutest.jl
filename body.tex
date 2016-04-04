@@ -44,7 +44,7 @@
 \subsection{CUTEst}
 
 \begin{frame}[t,fragile]
-  \ctr{CUTEst}
+  \ctr{CUTEst (Fortran)}
 \begin{lstlisting}[language=Fortran]
 CALL cutest_cdimen(st, ifile, n, m)
 if (m.GT.0) THEN
@@ -58,6 +58,9 @@ CALL cutest_ufn(st, n, x, f)
 \begin{frame}[t,fragile]
   \ctr{CUTEst.jl}
 \begin{lstlisting}
+Pkg.add("CUTEst") # Once
+\end{lstlisting}
+\begin{lstlisting}
 using CUTEst
 
 nlp = CUTEstModel("ROSENBR")
@@ -68,6 +71,7 @@ f = obj(nlp, x)
 \end{frame}
 
 \begin{frame}[t,fragile]
+  \ctr{Example}
 \lstinputlisting{src/newton.jl}
 \begin{lstlisting}
 f(x) = obj(nlp, x)
@@ -78,6 +82,7 @@ x = newton(f, g, H, nlp.meta.x0)
 \end{frame}
 
 \begin{frame}[t,fragile]
+  \ctr{Example}
 \lstinputlisting{src/newton.jl}
 \begin{lstlisting}
 f(x) = ufn(nlp, x) # Familiar names
@@ -90,10 +95,12 @@ x = newton(f, g, H, nlp.meta.x0)
 \subsection{Memory efficient}
 
 \begin{frame}[t,fragile]
+  \ctr{Example with inplace}
 \lstinputlisting{src/newtoninplace.jl}
 \end{frame}
 
 \begin{frame}[t,fragile]
+  \ctr{Example with inplace}
 \begin{lstlisting}
 f(x) = ufn(nlp, x)
 g!(x, gx) = ugr!(nlp, x, gx)
@@ -105,6 +112,7 @@ x = newton(f, g!, H!, nlp.meta.x0)
 \subsection{The Fortran wrapper}
 
 \begin{frame}[t,fragile]
+  \ctr{Fortran wrapper}
 \begin{lstlisting}
 io_err = Cint[0]
 n = Cint[nlp.meta.nvar]
@@ -123,12 +131,34 @@ ufn(io_err, n, x, f)
 
 \subsection{Test Driven Development}
 
-\myframe{
+\myframectr{
   \begin{itemize}
     \item {\it Create a failing test; Fix the test; Refactor code; Repeat.}
     \item Optimization doesn't have small building blocks;
-    \item Simplest problem you should solve;
+    \item Simplest representative problem you should be able to solve;
+    \item Classes of problems you should be able to solve;
+    \item Selection of CUTEst problems you should be able to solve.
   \end{itemize}
 }
+
+\myframe{
+  \ctr{Nonzero exit flag}
+  \begin{itemize}
+    \item Infinite loop;
+    \item Wrong derivative;
+    \item Budget limitations;
+    \item Domain error.
+  \end{itemize}
+}
+
+\myframe{
+  \ctr{Scaling}
+  \begin{itemize}
+    \item Dense matrices;
+    \item Inplace operations;
+    \item Small efficiencies.
+  \end{itemize}
+}
+
 
 \subsection{Thanks}
