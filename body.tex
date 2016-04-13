@@ -160,5 +160,80 @@ ufn(io_err, n, x, f)
   \end{itemize}
 }
 
+\section{TRON}
+
+\myframe{
+  \ctr{A practical example}
+    {\bf Newton's Method for Large Bound-Constrained Optimization
+      Problems} \\
+      Chih-Jen Lin and Jorge J. Moré \\
+      {\it SIAM Journal on Optimization} Vol. 9, No. 4, pp. 1100-1127, 1999.
+}
+
+\myframe{
+  \[ \min f(x) \quad \mbox{s. to} \quad x \in \Omega, \]
+  where $\Omega$ is
+  \[ \Omega = \{ x \in \mathbb{R}^n \mid \ell \leq x \leq u \}, \]
+  but can be extended to
+  \[ \Omega = \{ x \in \mathbb{R}^n \mid \ell \leq c_i^Tx \leq u,
+  \ i \in \mathcal{I} \}. \]
+}
+
+\myframe{
+  \ctr{Outline of iteration $k$}
+  \begin{enumerate}
+    \item Compute a model
+      \[ m_k(d) = \frac{1}{2}d^TB_kd + d^Tg_k. \]
+    \item Compute a gradient step $s_k = P[x_k - \alpha_kg_k] - x_k$ such that
+      \[ m_k(s_k) \leq \mu_0 g_k^Ts_k, \qquad \mbox{and} \qquad
+        \Vert s_k \Vert \leq \mu_1\Delta_k. \]
+    \item Compute a step $d_k$ better than $s_k$, i.e., further minimizing
+      $m_k$ with $\Vert d_k \Vert \leq \mu_1\Delta_k$.
+    \item Update $x_k$ and $\Delta_k$ using Trust Region rules.
+  \end{enumerate}
+}
+
+\myframe{
+  \ctr{Simplest problems}
+  \begin{itemize}
+    \item $f(x) = \frac{1}{2}(x_1^2 + x_2^2)$.
+  \end{itemize}
+}
+
+\begin{frame}[t,fragile]
+  \ctr{FactCheck}
+\begin{lstlisting}[basicstyle=\scriptsize\tt]
+facts("Simple test") do
+  x0 = [1.0; 2.0]
+  f(x) = dot(x,x)/2
+  g(x) = x
+  H(x) = eye(2)
+  nlp = SimpleNLPModel(x0, f, grad=g, hess=H)
+
+  x, fx, dual = tron(nlp)
+  @fact x --> roughly(zeros(2))
+  @fact fx --> roughly(0.0)
+  @fact dual --> roughly(0.0)
+end
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[t,fragile]
+  \ctr{FactCheck}
+\begin{lstlisting}[basicstyle=\scriptsize\tt]
+  ...
+  @fact dual --> roughly(0.0)
+
+  # Another simple test
+  l = [0.5; 0.25]
+  nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar = l)
+
+  x, fx, dual = tron(nlp)
+  @fact x --> roughly(l)
+  @fact fx --> roughly(f(l))
+  @fact dual --> roughly(0.0)
+end
+\end{lstlisting}
+\end{frame}
 
 \subsection{Thanks}
