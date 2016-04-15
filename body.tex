@@ -195,9 +195,7 @@ ufn(io_err, n, x, f)
 
 \myframe{
   \ctr{Simplest problems}
-  \begin{itemize}
-    \item $f(x) = \frac{1}{2}(x_1^2 + x_2^2)$.
-  \end{itemize}
+  \[ f(x) = \frac{1}{2}(x_1^2 + x_2^2). \]
 }
 
 \begin{frame}[t,fragile]
@@ -235,5 +233,65 @@ end
 end
 \end{lstlisting}
 \end{frame}
+
+\myframe{
+  \ctr{Minimum implementation}
+  \begin{enumerate}
+    \item Use $B_k = \nabla^2f(x_k)$;
+    \item Use $d_k = s_k$;
+    \item Trust Region is already implemented, so no need to simplify.
+  \end{enumerate}
+}
+
+\begin{frame}[t,fragile]
+  \ctr{Implementation}
+\begin{lstlisting}[basicstyle=\scriptsize\tt]
+# Projection
+P(x, l, u) = max(min(x, u), l)
+# Optimality
+dual(x) = norm(P(x - g(x), l, u) - x)
+# Trust region
+tr = TrustRegion(SomeInitialValue)
+D() = get_property(tr, :radius)
+# Gradient step
+s(a) = P(x - a*g(x), l, u) - x
+# Condition
+q(d) = 0.5*dot(d,B*d) + dot(d,g(x))
+cond(s) = q(s) <= mu0*dot(g(x),s) && norm(s) <= mu1*D()
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[t,fragile]
+  \ctr{Implementation}
+\begin{lstlisting}[basicstyle=\scriptsize\tt]
+sa = s(a)
+if cond(s)
+  while cond(a)
+    a *= 2.0
+    sa_new = s(a)
+    sa == sa_new && break
+    (sa_old, sa) = (sa, sa_new)
+  end
+  sa = sa_old
+  a /= 2.0
+else
+  while !cond(a)
+    a /= 2.0
+    sa_old = sa
+    sa = s(a)
+  end
+end
+\end{lstlisting}
+\end{frame}
+
+\myframe{
+  \ctr{New test}
+  \[ f(x) = (x_1 - 1)^2 + 100(x_2 - x_1^2)^2. \]
+  \begin{itemize}
+    \item Added to FactCheck;
+    \item Found an error on an unvisited part of the code;
+    \item Code coverage.
+  \end{itemize}
+}
 
 \subsection{Thanks}
