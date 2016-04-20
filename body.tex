@@ -35,7 +35,7 @@
   \begin{itemize}
     \item Easy to install;
     \item Easy to use;
-    \item Easy to optimize;
+    \item Easy to build in stages.
   \end{itemize}
 }
 
@@ -45,80 +45,81 @@
 
 \begin{frame}[t,fragile]
   \ctr{CUTEst (Fortran)}
-\begin{lstlisting}[language=Fortran]
+  \begin{minted}{fortran}
 CALL cutest_cdimen(st, ifile, n, m)
 if (m.GT.0) THEN
   STOP
 ENDIF
 CALL cutest_usetup(st, ifile, 7, 11, n, x, bl, bu)
 CALL cutest_ufn(st, n, x, f)
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{CUTEst.jl}
-\begin{lstlisting}
+  \begin{minted}{julia}
 Pkg.add("CUTEst") # Once
-\end{lstlisting}
-\begin{lstlisting}
+\end{minted}
+\begin{minted}{julia}
 using CUTEst
 
 nlp = CUTEstModel("ROSENBR")
 x = nlp.meta.x0
 
 f = obj(nlp, x)
-\end{lstlisting}
+cutest_finalize(nlp)
+\end{minted}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{Example}
-\lstinputlisting{src/newton.jl}
-\begin{lstlisting}
+  \inputminted{julia}{src/newton.jl}
+\begin{minted}{julia}
 f(x) = obj(nlp, x)
 g(x) = grad(nlp, x)
 H(x) = hess(nlp, x)
 x = newton(f, g, H, nlp.meta.x0)
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{Example}
-\lstinputlisting{src/newton.jl}
-\begin{lstlisting}
+  \inputminted{julia}{src/newton.jl}
+\begin{minted}{julia}
 f(x) = ufn(nlp, x) # Familiar names
 g(x) = ugr(nlp, x) # are here too
 H(x) = udh(nlp, x, nlp.meta.nvar)
 x = newton(f, g, H, nlp.meta.x0)
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \subsection{Memory efficient}
 
 \begin{frame}[t,fragile]
   \ctr{Example with inplace}
-\lstinputlisting{src/newtoninplace.jl}
+  \inputminted{julia}{src/newtoninplace.jl}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{Example with inplace}
-\begin{lstlisting}
+  \begin{minted}{julia}
 f(x) = ufn(nlp, x)
 g!(x, gx) = ugr!(nlp, x, gx)
 H!(x, Hx) = udh!(nlp, x, nlp.meta.nvar, Hx)
 x = newton(f, g!, H!, nlp.meta.x0)
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \subsection{The Fortran wrapper}
 
 \begin{frame}[t,fragile]
   \ctr{Fortran wrapper}
-\begin{lstlisting}
+  \begin{minted}{julia}
 io_err = Cint[0]
 n = Cint[nlp.meta.nvar]
 f = [0.0]
 ufn(io_err, n, x, f)
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \section{Workflow}
@@ -145,7 +146,6 @@ ufn(io_err, n, x, f)
   \ctr{Nonzero exit flag}
   \begin{itemize}
     \item Infinite loop;
-    \item Wrong derivative;
     \item Budget limitations;
     \item Domain error.
   \end{itemize}
@@ -157,6 +157,45 @@ ufn(io_err, n, x, f)
     \item Dense matrices;
     \item Inplace operations;
     \item Small efficiencies.
+  \end{itemize}
+}
+
+\section{Framework}
+
+\myframe{
+  \ctr{Framework}
+  \begin{itemize}
+    \item CUTEst.jl
+    \item NLPModels.jl
+    \item Optimize.jl
+  \end{itemize}
+}
+
+\subsection{NLPModels.jl}
+
+\myframe{
+  \ctr{NLPModels.jl}
+\begin{center}
+\begin{tikzpicture}
+  \node[draw,rectangle] (abstract) at (0,0) {AbstractNLPModel};
+  \node[draw,rectangle] (jump) at (3,2) {JuMPNLPModel};
+  \node[draw,rectangle] (simple) at (3,-2) {SimpleNLPModel};
+  \node[draw,rectangle] (cutest) at (-3,2) {CUTEstModel};
+  \draw[->] (jump) -- (abstract);
+  \draw[->] (simple) -- (abstract);
+  \draw[dashed,->] (cutest) -- (abstract);
+\end{tikzpicture}
+\end{center}
+}
+
+\subsection{Optimize.jl}
+
+\myframe{
+  \ctr{Optimize.jl}
+  \begin{itemize}
+    \item Methods;
+    \item Auxiliary algorithms (trust region, line search, etc.);
+    \item Testing and benchmarking;
   \end{itemize}
 }
 
@@ -194,13 +233,22 @@ ufn(io_err, n, x, f)
 }
 
 \myframe{
+  \ctr{Minimum implementation}
+  \begin{enumerate}
+    \item Use $B_k = \nabla^2f(x_k)$;
+    \item Use $d_k = s_k$;
+    \item Trust Region is already implemented, so no need to simplify.
+  \end{enumerate}
+}
+
+\myframe{
   \ctr{Simplest problems}
   \[ f(x) = \frac{1}{2}(x_1^2 + x_2^2). \]
 }
 
 \begin{frame}[t,fragile]
   \ctr{FactCheck}
-\begin{lstlisting}[basicstyle=\scriptsize\tt]
+  \begin{minted}{julia}
 facts("Simple test") do
   x0 = [1.0; 2.0]
   f(x) = dot(x,x)/2
@@ -212,16 +260,14 @@ facts("Simple test") do
   @fact x --> roughly(zeros(2))
   @fact fx --> roughly(0.0)
   @fact dual --> roughly(0.0)
-end
-\end{lstlisting}
+  ...
+\end{minted}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{FactCheck}
-\begin{lstlisting}[basicstyle=\scriptsize\tt]
+  \begin{minted}{julia}
   ...
-  @fact dual --> roughly(0.0)
-
   # Another simple test
   l = [0.5; 0.25]
   nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar = l)
@@ -231,39 +277,30 @@ end
   @fact fx --> roughly(f(l))
   @fact dual --> roughly(0.0)
 end
-\end{lstlisting}
+\end{minted}
 \end{frame}
-
-\myframe{
-  \ctr{Minimum implementation}
-  \begin{enumerate}
-    \item Use $B_k = \nabla^2f(x_k)$;
-    \item Use $d_k = s_k$;
-    \item Trust Region is already implemented, so no need to simplify.
-  \end{enumerate}
-}
 
 \begin{frame}[t,fragile]
   \ctr{Implementation}
-\begin{lstlisting}[basicstyle=\scriptsize\tt]
+  \begin{minted}[fontsize=\small]{julia}
 # Projection
-P(x, l, u) = max(min(x, u), l)
+P(x) = max(min(x, u), l)
 # Optimality
-dual(x) = norm(P(x - g(x), l, u) - x)
+dual(x) = norm(P(x - g(x)) - x)
 # Trust region
 tr = TrustRegion(SomeInitialValue)
 D() = get_property(tr, :radius)
 # Gradient step
-s(a) = P(x - a*g(x), l, u) - x
+s(a) = P(x - a*g(x)) - x
 # Condition
-q(d) = 0.5*dot(d,B*d) + dot(d,g(x))
+q(d) = 0.5*dot(d,H(x)*d) + dot(d,g(x))
 cond(s) = q(s) <= mu0*dot(g(x),s) && norm(s) <= mu1*D()
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \begin{frame}[t,fragile]
   \ctr{Implementation}
-\begin{lstlisting}[basicstyle=\scriptsize\tt]
+  \begin{minted}[fontsize=\scriptsize]{julia}
 sa = s(a)
 if cond(s)
   while cond(a)
@@ -281,7 +318,7 @@ else
     sa = s(a)
   end
 end
-\end{lstlisting}
+\end{minted}
 \end{frame}
 
 \myframe{
@@ -290,23 +327,40 @@ end
   \begin{itemize}
     \item Added to FactCheck;
     \item Found an error on an unvisited part of the code;
-    \item Code coverage.
-    \item Add bounds.
+    \item Code coverage;
+    \item With bounds $\rightarrow$ another test.
   \end{itemize}
 }
 
-\myframe{
-  \ctr{Iteration limits}
-}
+\begin{frame}[t,fragile]
+  \ctr{Limits}
+  \begin{minted}{julia}
+f(x) = begin sleep(0.1); sum(exp(x)) end
+g(x) = begin sleep(0.1); exp(x) end
+H(x) = begin sleep(0.1); spdiagm(exp(x), 0, 10, 10) end
+x0 = 10*ones(10)
+\end{minted}
+\end{frame}
 
 \myframe{
   \ctr{New test}
-  \[ f(x) = \frac{1}{2}(x-r)^TQ^T\Lambda Q(x-r) + 1.0, \]
+  \[ f(x) = \frac{1}{2}(x-r)^TQ^T\Lambda Q(x-r) + 1, \]
   where
   \begin{itemize}
     \item $r = (1,\dots,1)^T$;
     \item $Q$ is an orthogonal matrix;
     \item $\Lambda = \mbox{diag}(10^{-4}, \dots, 1)^T$
+  \end{itemize}
+}
+
+\myframe{
+  \ctr{New test}
+  \[ \min \ f(x) = \frac{1}{2}x^TBx + g^Tx, \quad \mbox{s. to} \quad
+    \ell \leq x \leq u, \]
+  where
+  \begin{itemize}
+    \item $B = Q^T\Lambda Q > 0$.
+    \item Build solution and choose $g$
   \end{itemize}
 }
 
