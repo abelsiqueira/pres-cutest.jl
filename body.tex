@@ -18,16 +18,26 @@
 \myframe{
    ``... We should forget about the small efficiencies, say about 97\% of the
     time: {\bf premature optimization is the root of all evil}...'' \\
-    Donald Knuth
+    Donald Knuth \\
+
+  ``The strategy is definitely: first {\bf make it work}, then {\bf make it
+    right}, and, finally, {\bf make it fast}.'' \\
+    Kent Beck
 }
 
 \subsection{Test Driven Development}
 
 \myframectr{
-  \begin{itemize}
-    \item {\it Create a failing test; Fix the test; Refactor code; Repeat.}
-    \item Optimization doesn't have small building blocks;
-  \end{itemize}
+\begin{center}
+\begin{tikzpicture}
+  \node (test) at (0, 2) {Create a test};
+  \node (fix) at (1.6, -1) {Fix the test};
+  \node (refactor) at (-1.6, -1) {Refactor};
+  \draw[->] (test) to[out=-20,in=60] (fix);
+  \draw[->] (fix) to[out=240,in=300] (refactor);
+  \draw[->] (refactor) to[out=120,in=200] (test);
+\end{tikzpicture}
+\end{center}
 }
 
 \subsection{Problems as blocks}
@@ -95,9 +105,10 @@
 
 \myframectr{
   \begin{itemize}
-    \item High level, High performance
-    \item Great C/Fortran interface
-    \item Easy syntax
+    \item High level, High performance;
+    \item Great C/Fortran interface;
+    \item Easy syntax;
+    \item Good practices (git, automated testing, code coverage);
   \end{itemize}
 }
 
@@ -269,6 +280,8 @@ ufn(io_err, n, x, f)
 
 \section{Practical example}
 
+\subsection{TRON}
+
 \myframe{
   \ctr{TRON: A practical example}
     {\bf Newton's Method for Large Bound-Constrained Optimization
@@ -300,14 +313,7 @@ ufn(io_err, n, x, f)
   \end{enumerate}
 }
 
-\myframe{
-  \ctr{Minimum implementation}
-  \begin{enumerate}
-    \item Use $B_k = \nabla^2f(x_k)$;
-    \item Use $d_k = s_k$;
-    \item Trust Region is already implemented, so no need to simplify.
-  \end{enumerate}
-}
+\subsection{Make it work}
 
 \myframe{
   \ctr{Simplest problems}
@@ -317,6 +323,15 @@ ufn(io_err, n, x, f)
       2$;
     \item Rosenbrock with and without bounds;
   \end{itemize}
+}
+
+\myframe{
+  \ctr{Minimum implementation}
+  \begin{enumerate}
+    \item Use $B_k = \nabla^2f(x_k)$;
+    \item Use $d_k = s_k$;
+    \item Trust Region is already implemented, so no need to simplify.
+  \end{enumerate}
 }
 
 \begin{frame}[t,fragile]
@@ -339,8 +354,6 @@ end
 \end{minted}
 \end{frame}
 
-\subsection{Implementation}
-
 \begin{frame}[t,fragile]
   \ctr{Implementation}
   \begin{minted}[fontsize=\small]{julia}
@@ -358,6 +371,8 @@ q(d) = 0.5*dot(d,H(x)*d) + dot(d,g(x))
 cond(s) = q(s) <= mu0*dot(g(x),s) && norm(s) <= mu1*D()
 \end{minted}
 \end{frame}
+
+\subsection{Make it right}
 
 \begin{frame}[fragile]
   \ctr{Limits}
@@ -386,6 +401,7 @@ x0 = 10*ones(10)
     \item $B = Q^T\Lambda Q > 0$.
     \item Build solution and choose $g$
   \end{itemize}
+  \item Generalized rosenbrock with bounds.
   \end{itemize}
 }
 
@@ -394,8 +410,24 @@ x0 = 10*ones(10)
   \begin{itemize}
     \item Change $H(x)$ to $v \mapsto H(x)v$, i.e.,
       \mintinline{julia}{hess} to \mintinline{julia}{hprod};
-    \item 
+    \item Store repeated function calls;
+    \item Use inplace operations;
   \end{itemize}
 \end{frame}
+
+\section{Future work}
+
+\subsection{Future work}
+
+\myframe{
+  \ctr{Future Work}
+
+  \begin{itemize}
+    \item Implement various methods;
+    \item Create a documentation;
+    \item Benchmark many methods;
+    \item Problem selection.
+  \end{itemize}
+}
 
 \subsection{Thanks}
