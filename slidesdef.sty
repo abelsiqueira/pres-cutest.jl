@@ -5,6 +5,7 @@
 \usepackage{algpseudocode}
 \usepackage[numbers]{natbib}
 \usepackage{listings}
+\usepackage{multicol}
 \usepackage{epsfig}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
@@ -13,6 +14,7 @@
 \usepackage{minted}
 \pgfplotsset{compat=newest}
 \usepackage{amssymb, amsmath, amsfonts}
+\usepackage{pifont}
 \def\newblock{\hskip .11em plus .33em minus .07em}
 
 \useinnertheme{rounded}
@@ -130,3 +132,6 @@
 \setminted{
   frame=single
 }
+
+\newcommand{\yes}{{\color{green!50!black} \ding{51}}}
+\newcommand{\no}{{\color{red} \ding{55}}}

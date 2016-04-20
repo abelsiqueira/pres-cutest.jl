@@ -1,11 +1,95 @@
-\AtBeginSection[]
-{
+\myframe{
+  \begin{multicols}{2}
+  \tableofcontents
+  \end{multicols}
+}
+
+\AtBeginSection[]{
   \begin{frame}
+    \begin{multicols}{2}
     \tableofcontents[currentsection]
+    \end{multicols}
   \end{frame}
 }
 
-\section{Introduction}
+
+\section{Workflow}
+
+\myframe{
+   ``... We should forget about the small efficiencies, say about 97\% of the
+    time: {\bf premature optimization is the root of all evil}...'' \\
+    Donald Knuth
+}
+
+\subsection{Test Driven Development}
+
+\myframectr{
+  \begin{itemize}
+    \item {\it Create a failing test; Fix the test; Refactor code; Repeat.}
+    \item Optimization doesn't have small building blocks;
+  \end{itemize}
+}
+
+\subsection{Problems as blocks}
+
+\myframe{
+  \ctr{Problems as blocks}
+  \begin{itemize}
+    \item Simplest representative problems;
+    \item Classes of problems;
+    \item Selection of CUTEst problems.
+  \end{itemize}
+}
+
+\myframe{
+  \ctr{Test nonzero exit flag}
+  \begin{itemize}
+    \item Infinite loop;
+    \item Budget limitations;
+    \item Domain error.
+  \end{itemize}
+}
+
+\myframe{
+  \ctr{Scale the problem}
+  \begin{itemize}
+    \item Dense matrices;
+    \item Inplace operations;
+    \item Small efficiencies.
+  \end{itemize}
+}
+
+\subsection{Outline}
+
+\begin{frame}[t,fragile]
+  \ctr{Outline}
+  \begin{enumerate}
+    \setlength{\itemsep}{0pt}
+    \item<1-> Use a test library (\mintinline{julia}{FactCheck.jl});
+    \item<2->
+    \begin{enumerate}
+      \item Write small problem;
+      \item Write simplest code solving it (theory \yes, efficiency \no);
+      \item Repeat
+    \end{enumerate}
+    \item<3-> Write the limitation tests (time and iteration) and codes;
+    \item<4->
+    \begin{enumerate}
+      \item Write class os problems (hundreds of runs, randomized, larger size);
+      \item Write code solving it;
+      \item Repeat
+    \end{enumerate}
+    \item<5->
+    \begin{enumerate}
+      \item Choose CUTEst problem;
+      \item Try to solve it;
+      \item Repeat
+    \end{enumerate}
+    \item<6-> Improve the code.
+  \end{enumerate}
+\end{frame}
+
+\section{Framework}
 
 \subsection{Julia}
 
@@ -16,6 +100,67 @@
     \item Easy syntax
   \end{itemize}
 }
+
+\begin{frame}[fragile]
+  \ctr{Framework}
+  \begin{itemize}
+    \item Develop with \mintinline{julia}{Optimize.jl};
+    \item Create the tests with \mintinline{julia}{NLPModels.jl};
+    \item Easily access CUTEst with \mintinline{julia}{CUTEst.jl}.
+  \end{itemize}
+\end{frame}
+
+\subsection{Optimize.jl}
+
+\myframe{
+  \ctr{Optimize.jl}
+  \begin{itemize}
+    \item Methods;
+    \item Auxiliary algorithms and tools (trust region, line search, etc.);
+    \item Testing and benchmarking.
+  \end{itemize}
+}
+
+\subsection{NLPModels.jl}
+
+\begin{frame}[fragile]
+  \ctr{NLPModels.jl}
+  \begin{itemize}
+    \item Define \mintinline{julia}{AbstractNLPModel};
+    \item Define \mintinline{julia}{JuMPNLPModel} and
+      \mintinline{julia}{SimpleNLPModel};
+    \item AMPL and CUTEst are derived from it;
+    \item Allows future models.
+  \end{itemize}
+\end{frame}
+
+\myframe{
+  \ctr{NLPModels.jl}
+\begin{center}
+\begin{tikzpicture}
+  \node[draw,rectangle] (abstract) at (-4,0) {AbstractNLPModel};
+  \node[draw,rectangle] (jumpnlp) at (0,1) {JuMPNLPModel};
+  \node[draw,rectangle] (simple) at (0,-1) {SimpleNLPModel};
+  \node[red,draw,rectangle] (ampl) at (0,-2) {AmplNLPModel};
+  \node[red,draw,rectangle] (cutest) at (0,0) {CUTEstModel};
+  \node[draw,rectangle] (opt) at (-4,-2) {Optimize};
+  \node[dashed,draw,rectangle] (jump) at (4,1) {JuMP};
+  \node[dashed,draw,rectangle] (mpb) at (4,0) {MathProgBase};
+  \node[dashed,draw,rectangle] (ipopt) at (4,-1) {IPOPT};
+  \draw[thick,->] (jumpnlp) -- (abstract);
+  \draw[thick,->] (simple) -- (abstract);
+  \draw[thick,->] (ampl) -- (abstract);
+  \draw[thick,->] (cutest) -- (abstract);
+  \draw[thick,->] (abstract) -- (opt);
+  \draw[thick,->] (cutest) -- (mpb);
+  \draw[thick,->] (jump) -- (jumpnlp);
+  \draw[thick,->] (jump) -- (mpb);
+  \draw[thick,->] (mpb) -- (ipopt);
+\end{tikzpicture}
+\end{center}
+}
+
+\section{CUTEst.jl}
 
 \subsection{CUTEst}
 
@@ -39,19 +184,19 @@
   \end{itemize}
 }
 
-\section{Why CUTEst.jl}
-
 \subsection{CUTEst}
 
 \begin{frame}[t,fragile]
   \ctr{CUTEst (Fortran)}
   \begin{minted}{fortran}
+... !open problem and define variables
 CALL cutest_cdimen(st, ifile, n, m)
 if (m.GT.0) THEN
   STOP
 ENDIF
 CALL cutest_usetup(st, ifile, 7, 11, n, x, bl, bu)
 CALL cutest_ufn(st, n, x, f)
+... !close and end
 \end{minted}
 \end{frame}
 
@@ -122,87 +267,10 @@ ufn(io_err, n, x, f)
 \end{minted}
 \end{frame}
 
-\section{Workflow}
+\section{Practical example}
 
 \myframe{
-   ``... We should forget about the small efficiencies, say about 97\% of the
-    time: {\bf premature optimization is the root of all evil}...'' \\
-    Donald Knuth
-}
-
-\subsection{Test Driven Development}
-
-\myframectr{
-  \begin{itemize}
-    \item {\it Create a failing test; Fix the test; Refactor code; Repeat.}
-    \item Optimization doesn't have small building blocks;
-    \item Simplest representative problem you should be able to solve;
-    \item Classes of problems you should be able to solve;
-    \item Selection of CUTEst problems you should be able to solve.
-  \end{itemize}
-}
-
-\myframe{
-  \ctr{Nonzero exit flag}
-  \begin{itemize}
-    \item Infinite loop;
-    \item Budget limitations;
-    \item Domain error.
-  \end{itemize}
-}
-
-\myframe{
-  \ctr{Scaling}
-  \begin{itemize}
-    \item Dense matrices;
-    \item Inplace operations;
-    \item Small efficiencies.
-  \end{itemize}
-}
-
-\section{Framework}
-
-\myframe{
-  \ctr{Framework}
-  \begin{itemize}
-    \item CUTEst.jl
-    \item NLPModels.jl
-    \item Optimize.jl
-  \end{itemize}
-}
-
-\subsection{NLPModels.jl}
-
-\myframe{
-  \ctr{NLPModels.jl}
-\begin{center}
-\begin{tikzpicture}
-  \node[draw,rectangle] (abstract) at (0,0) {AbstractNLPModel};
-  \node[draw,rectangle] (jump) at (3,2) {JuMPNLPModel};
-  \node[draw,rectangle] (simple) at (3,-2) {SimpleNLPModel};
-  \node[draw,rectangle] (cutest) at (-3,2) {CUTEstModel};
-  \draw[->] (jump) -- (abstract);
-  \draw[->] (simple) -- (abstract);
-  \draw[dashed,->] (cutest) -- (abstract);
-\end{tikzpicture}
-\end{center}
-}
-
-\subsection{Optimize.jl}
-
-\myframe{
-  \ctr{Optimize.jl}
-  \begin{itemize}
-    \item Methods;
-    \item Auxiliary algorithms (trust region, line search, etc.);
-    \item Testing and benchmarking;
-  \end{itemize}
-}
-
-\section{TRON}
-
-\myframe{
-  \ctr{A practical example}
+  \ctr{TRON: A practical example}
     {\bf Newton's Method for Large Bound-Constrained Optimization
       Problems} \\
       Chih-Jen Lin and Jorge J. Moré \\
@@ -243,34 +311,25 @@ ufn(io_err, n, x, f)
 
 \myframe{
   \ctr{Simplest problems}
-  \[ f(x) = \frac{1}{2}(x_1^2 + x_2^2). \]
+  \begin{itemize}
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2)$;
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $1 \leq x_1,x_2 \leq
+      2$;
+    \item Rosenbrock with and without bounds;
+  \end{itemize}
 }
 
 \begin{frame}[t,fragile]
   \ctr{FactCheck}
-  \begin{minted}{julia}
+  \begin{minted}[fontsize=\scriptsize]{julia}
 facts("Simple test") do
-  x0 = [1.0; 2.0]
+  x0 = [1.2; 1.8]
   f(x) = dot(x,x)/2
   g(x) = x
   H(x) = eye(2)
-  nlp = SimpleNLPModel(x0, f, grad=g, hess=H)
-
-  x, fx, dual = tron(nlp)
-  @fact x --> roughly(zeros(2))
-  @fact fx --> roughly(0.0)
-  @fact dual --> roughly(0.0)
-  ...
-\end{minted}
-\end{frame}
-
-\begin{frame}[t,fragile]
-  \ctr{FactCheck}
-  \begin{minted}{julia}
-  ...
-  # Another simple test
-  l = [0.5; 0.25]
-  nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar = l)
+  l = [1.0; 1.0]
+  u = [2.0; 2.0]
+  nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar=l, uvar=u)
 
   x, fx, dual = tron(nlp)
   @fact x --> roughly(l)
@@ -279,6 +338,8 @@ facts("Simple test") do
 end
 \end{minted}
 \end{frame}
+
+\subsection{Implementation}
 
 \begin{frame}[t,fragile]
   \ctr{Implementation}
@@ -298,41 +359,7 @@ cond(s) = q(s) <= mu0*dot(g(x),s) && norm(s) <= mu1*D()
 \end{minted}
 \end{frame}
 
-\begin{frame}[t,fragile]
-  \ctr{Implementation}
-  \begin{minted}[fontsize=\scriptsize]{julia}
-sa = s(a)
-if cond(s)
-  while cond(a)
-    a *= 2.0
-    sa_new = s(a)
-    sa == sa_new && break
-    (sa_old, sa) = (sa, sa_new)
-  end
-  sa = sa_old
-  a /= 2.0
-else
-  while !cond(a)
-    a /= 2.0
-    sa_old = sa
-    sa = s(a)
-  end
-end
-\end{minted}
-\end{frame}
-
-\myframe{
-  \ctr{New test}
-  \[ f(x) = (x_1 - 1)^2 + 100(x_2 - x_1^2)^2. \]
-  \begin{itemize}
-    \item Added to FactCheck;
-    \item Found an error on an unvisited part of the code;
-    \item Code coverage;
-    \item With bounds $\rightarrow$ another test.
-  \end{itemize}
-}
-
-\begin{frame}[t,fragile]
+\begin{frame}[fragile]
   \ctr{Limits}
   \begin{minted}{julia}
 f(x) = begin sleep(0.1); sum(exp(x)) end
@@ -343,25 +370,32 @@ x0 = 10*ones(10)
 \end{frame}
 
 \myframe{
-  \ctr{New test}
-  \[ f(x) = \frac{1}{2}(x-r)^TQ^T\Lambda Q(x-r) + 1, \]
-  where
+  \ctr{Class os tests}
   \begin{itemize}
-    \item $r = (1,\dots,1)^T$;
-    \item $Q$ is an orthogonal matrix;
-    \item $\Lambda = \mbox{diag}(10^{-4}, \dots, 1)^T$
-  \end{itemize}
-}
-
-\myframe{
-  \ctr{New test}
-  \[ \min \ f(x) = \frac{1}{2}x^TBx + g^Tx, \quad \mbox{s. to} \quad
-    \ell \leq x \leq u, \]
+    \item $\min \ f(x) = \frac{1}{2}(x-r)^TQ^T\Lambda Q(x-r) + 1$,
+    where
+    \begin{itemize}
+      \item $r = (1,\dots,1)^T$;
+      \item $Q$ is an orthogonal matrix;
+      \item $\Lambda = \mbox{diag}(10^{-4}, \dots, 1)^T$
+    \end{itemize}
+  \item $\min \ f(x) = \frac{1}{2}x^TBx + g^Tx$, subject to
+    $\ell \leq x \leq u$,
   where
   \begin{itemize}
     \item $B = Q^T\Lambda Q > 0$.
     \item Build solution and choose $g$
   \end{itemize}
+  \end{itemize}
 }
+
+\begin{frame}[fragile]
+  \ctr{Improvements}
+  \begin{itemize}
+    \item Change $H(x)$ to $v \mapsto H(x)v$, i.e.,
+      \mintinline{julia}{hess} to \mintinline{julia}{hprod};
+    \item 
+  \end{itemize}
+\end{frame}
 
 \subsection{Thanks}
