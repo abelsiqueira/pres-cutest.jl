@@ -118,6 +118,8 @@
     \item Develop with \mintinline{julia}{Optimize.jl};
     \item Create the tests with \mintinline{julia}{NLPModels.jl};
     \item Easily access CUTEst with \mintinline{julia}{CUTEst.jl}.
+    \item Use \mintinline{julia}{LinearOperators.jl}, including a LBFGS
+      operator.
   \end{itemize}
 \end{frame}
 
@@ -330,7 +332,8 @@ ufn(io_err, n, x, f)
   \begin{enumerate}
     \item Use $B_k = \nabla^2f(x_k)$;
     \item Use $d_k = s_k$;
-    \item Trust Region is already implemented, so no need to simplify.
+    \item Trust Region is already implemented, not exactly the same, but
+      similar.
   \end{enumerate}
 }
 
@@ -392,7 +395,7 @@ x0 = 10*ones(10)
     \begin{itemize}
       \item $r = (1,\dots,1)^T$;
       \item $Q$ is an orthogonal matrix;
-      \item $\Lambda = \mbox{diag}(10^{-4}, \dots, 1)^T$
+      \item $\Lambda = \mbox{diag}(10^{-2}, \dots, 1)^T$
     \end{itemize}
   \item $\min \ f(x) = \frac{1}{2}x^TBx + g^Tx$, subject to
     $\ell \leq x \leq u$,
@@ -408,8 +411,10 @@ x0 = 10*ones(10)
 \begin{frame}[fragile]
   \ctr{Improvements}
   \begin{itemize}
-    \item Change $H(x)$ to $v \mapsto H(x)v$, i.e.,
-      \mintinline{julia}{hess} to \mintinline{julia}{hprod};
+    \item Use \mintinline{julia}{LinearOperators.jl}, such as
+      \mintinline{julia}{H = LinearOperator(n, Float64, v -> hprod(nlp, x, v))}
+      or
+      \mintinline{julia}{H = LBFGSOperator(n, mem)}
     \item Store repeated function calls;
     \item Use inplace operations;
   \end{itemize}
