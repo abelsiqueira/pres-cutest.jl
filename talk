@@ -1,0 +1,24 @@
+Hello all, my name is Abel, I'm a professor at the Federal University of Paraná,
+in Brazil.
+This is a joint work with professor Orban, which is a culmination of our work
+with some Julia packages.
+I present a suggested workflow for writing optimization algorithms based on
+agile methodology. Then, I present a framework composed of some packages we
+created for Julia, which are very useful. I present a little about CUTEst, which
+is where we did most work, and a practical example of the application of the the
+workflow using the framework.
+Finally I show some possible future projects.
+
+The following quotes are a good description of the workflow.
+First, by Donald Knuth, which warns us of the priorities of software
+development, and below by Kent Beck, associated with the Agile methodology:
+make it work, that is, solve the problem,
+make it right, which we'll interpret here as make sure it doesn't break,
+and make it fast, which is the efficiency part of an algorithm.
+
+The most known implementation of this methodology is Test Driven Development,
+in which one creates a significant test for which the current code fails, then
+writes sufficient codes to fix the test, without breaking any other tests, and
+then refactor the code clarifying or improving it.
+
+Usually, the tests are small parts of the larger code.
