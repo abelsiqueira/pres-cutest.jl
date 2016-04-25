@@ -29,9 +29,11 @@ to solve. If our algorithm can't solve these, than it isn't working.
 Second, we choose classes of problems. These may also be necessary, but they may
 begin to reveal deficiencies on our code (such as convexity requirements).
 Here we can also incrementally consider larger problems.
-Lastly, we choose CUTEst problems we'd like to solve. Some may be simple and
-required, some may not. This last step is usually what goes into a paper, for
-instance.
+Lastly, we choose CUTEst problems we'd like to solve.
+Some may be simple and required, some may not. This last step is usually what
+goes into a paper.
+For those not familiar, CUTEst is a very well known repository of general
+nonlinear problems.
 
 In addition to the mention problems, we also need to consider correctness of the
 algorithm. For instance, it should not run forever, or it must obey hard
@@ -65,4 +67,121 @@ This made it a perfect combination for CUTEst, which I'll remind next.
 It also has great syntax, which it borrows from MatLab and Python, among others,
 and it can lead indirectly to good coding practices.
 
-Our framework consists of a few Julia packages, which provide ways to access
+Our framework consists of a few Julia packages, which provide ways efficiently
+follow the workflow. Optimize.jl helps you develop your method;
+NLPModels lets you write the problems easily;
+CUTEst.jl lets you access the CUTEst problems;
+and LinearOperators are a way to define matrix operation efficiently.
+
+The Optimize package consists of some methods definitions, useful for
+subproblems, for instance, and some tools like trust region and line search.
+It also contains benchmarking procedures for problem using the same framework.
+
+NLPModels defines an abstract type and two concrete types. One for use with the
+JuMP modeling language, and one without any prerequisites, in which you define
+the functions and derivatives.
+AMPL and CUTEst models are also derived from this abstract model.
+
+Therefore, our suggestion is to develop a method that has an abstract model as
+input. This way, you can access a wide range of problem input types.
+This way, two methods created like this can easily be tested against the CUTEst
+library; but a beginner user, such as an undergrad student, can still use the
+method from a simple input or a modeling language.
+
+Now, for a great part of our effort, which was making the CUTEst package in
+Julia.
+
+Reminding, CUTEst is a repository of nonlinear optimization problems.
+It provides functions that access the problem informations, such as bounds,
+functions and derivatives,
+and it works by decoding a problem and compiling your code against it.
+It is widely used, but from my experience, it is generally hard for a beginner
+to use.
+
+CUTEst.jl is a package for Julia that lets you install and use CUTEst very
+easily. It provides the usual CUTEst functions, as well as friendlier functions.
+
+In Fortran, for instance, this is the code I would have to use to get the
+objective function value at the starting point. I left out the lines that would
+open and close the file, and declare the variables.
+
+This is the complete code in Julia. Everything is much simpler and clearer as
+expected from a high level language.
+
+CUTEst.jl comes with three flavors of function calls.
+The first is simply a wrapper for the fortran call. All variables must be
+pointers.
+
+The second way improves the first. The names are still the same, but whenever
+possible we omit a input variable. Since most things are in nlp, we can simply
+pass it, and decrease our function call.
+Alternatively, we also have the option of not passing nlp, and using the
+explicit variables.
+Also, when possible, we create an inplace version for the array variables.
+
+Further simplifying, we have variables with better names, and that verify
+automatically when to use constrained or unconstrained functions.
+
+Here are more examples of functions. Some are required to AbstractModel, some
+are not. We are still working on a full compatibility between most models.
+
+Now, a short and practical example of the workflow.
+
+We consider the Newton's method for large bound-constrained optimization
+problems by Lin and Moré.
+They describe a method, with an implementation named TRON,
+
+for bound constrained minimization. It can also be extended to linear
+inequalities.
+
+The method consists of creating a quadratic model, then finding a step along
+the gradient line with projection on the bounds, that provides sufficient
+decrease inside a trust region.
+This step is then improved, without leaving the bounds at xk plus sk or the
+trust region.
+Finally, we update the iterate and the trust region.
+This is a very simple description of the method.
+
+The simplest problems we believe should be able to solve are there.
+A simple quadratic function with and without bounds. Notice the explicit numbers
+here.
+These problems can be implemented one at a time.
+
+The minimum implementation to solve these problems, and also the simplest one,
+is to consider the Hessian in the quadratic model,
+don't improve on the gradient step,
+and since there is an implementation of trust region on Optimize, we simply use
+that.
+
+An example of a test written with FactCheck is as follow.
+Notice that we use SimpleNLPModel and define our functions explicitly.
+The function call is here, and our verifications are here.
+The point is verified, as well as the function value and the dual infeasibility.
+
+As I mentioned before, forget about efficiency.
+These functions are not efficient, but they are written in one line, are easy to
+read, and most important, they work.
+Note the trust region call here, native to Optimize.jl, and this condition,
+which is very inefficient, but very useful.
+
+For the limits, instead of finding a failing or slow problem, we simulate one
+by using the sleep command.
+
+For the class of problems, we expected to solve positive definite quadratics
+without bounds with reasonable condition number.
+We also want to solve with bounds, and we can artificially generate to know the
+solution and compare.
+Finally, we can consider generalized Rosenbrock.
+All these problems have variable size, and we can sequentially improve.
+
+One improvement is to use LinearOperators, which can even be a limite BFGS
+operator.
+Another is stop calling the functions every time, and to use inplace operations
+to stop creating arrays every time.
+
+Now, for our future projects,
+
+we intend to finish TRON and implement other methods;
+create a documentation for all this, with examples;
+and benchmarks some methods.
+We also want to develop many other tools, such as a problem selector.

@@ -197,8 +197,6 @@
   \end{itemize}
 }
 
-\subsection{CUTEst}
-
 \begin{frame}[t,fragile]
   \ctr{CUTEst (Fortran)}
   \begin{minted}{fortran}
@@ -229,54 +227,69 @@ cutest_finalize(nlp)
 \end{minted}
 \end{frame}
 
+\subsection{Flavors}
+
 \begin{frame}[t,fragile]
-  \ctr{Example}
-  \inputminted{julia}{src/newton.jl}
+  \ctr{Flavors}
+\begin{minted}{fortran}
+CALL cutest_ufn(st, n, x, f)
+CALL cutest_cfn(st, n, m, x, f, c)
+\end{minted}
+\ctr{Wrapper}
 \begin{minted}{julia}
-f(x) = obj(nlp, x)
-g(x) = grad(nlp, x)
-H(x) = hess(nlp, x)
-x = newton(f, g, H, nlp.meta.x0)
-\end{minted}
-\end{frame}
-
-\begin{frame}[t,fragile]
-  \ctr{Example}
-  \inputminted{julia}{src/newton.jl}
-\begin{minted}{julia}
-f(x) = ufn(nlp, x) # Familiar names
-g(x) = ugr(nlp, x) # are here too
-H(x) = udh(nlp, x, nlp.meta.nvar)
-x = newton(f, g, H, nlp.meta.x0)
-\end{minted}
-\end{frame}
-
-\subsection{Memory efficient}
-
-\begin{frame}[t,fragile]
-  \ctr{Example with inplace}
-  \inputminted{julia}{src/newtoninplace.jl}
-\end{frame}
-
-\begin{frame}[t,fragile]
-  \ctr{Example with inplace}
-  \begin{minted}{julia}
-f(x) = ufn(nlp, x)
-g!(x, gx) = ugr!(nlp, x, gx)
-H!(x, Hx) = udh!(nlp, x, nlp.meta.nvar, Hx)
-x = newton(f, g!, H!, nlp.meta.x0)
-\end{minted}
-\end{frame}
-
-\subsection{The Fortran wrapper}
-
-\begin{frame}[t,fragile]
-  \ctr{Fortran wrapper}
-  \begin{minted}{julia}
-io_err = Cint[0]
-n = Cint[nlp.meta.nvar]
+st = Cint[0]
 f = [0.0]
-ufn(io_err, n, x, f)
+c = zeros(m)
+ufn(st, Cint[n], x, f)
+cfn(st, Cint[n], Cint[m], x, f, c)
+\end{minted}
+\end{frame}
+
+\begin{frame}[t,fragile]
+  \ctr{Flavors}
+\begin{minted}{fortran}
+CALL cutest_ufn(st, n, x, f)
+CALL cutest_cfn(st, n, m, x, f, c)
+\end{minted}
+\ctr{Julian way}
+\begin{minted}{julia}
+f = ufn(nlp, x)
+f = ufn(n, x)
+f, c = cfn(nlp, x)
+f, c = cfn(n, m, x)
+f = cfn!(nlp, x, c) # Inplace
+f = cfn!(n, m, x, c) # Inplace
+\end{minted}
+\end{frame}
+
+\begin{frame}[t,fragile]
+  \ctr{Flavors}
+\begin{minted}{fortran}
+CALL cutest_ufn(st, n, x, f)
+CALL cutest_cfn(st, n, m, x, f, c)
+\end{minted}
+\ctr{AbstractModel way}
+\begin{minted}{julia}
+f = obj(nlp, x)
+c = cons(nlp, x)
+f = objcons(nlp, x) # If unconstrained
+f, c = objcons(nlp, x) # If constrained
+\end{minted}
+\end{frame}
+
+\subsection{Some functions}
+
+\begin{frame}[t,fragile]
+  \ctr{Some functions}
+  \begin{minted}{julia}
+g = grad(nlp, x)
+H = hess(nlp, x) # Sparse
+H = hess(nlp, x, y) # Sparse
+hrow, hcol, hval = hess_coord(nlp, x)
+hrow, hcol, hval = hess_coord(nlp, x, y)
+J = jac(nlp, x) # Sparse
+jrow, jcol, jval = jac_coord(nlp, x)
+Hv = hprod(nlp, x, v)
 \end{minted}
 \end{frame}
 
@@ -310,7 +323,8 @@ ufn(io_err, n, x, f)
       \[ m_k(s_k) \leq \mu_0 g_k^Ts_k, \qquad \mbox{and} \qquad
         \Vert s_k \Vert \leq \mu_1\Delta_k. \]
     \item Compute a step $d_k$ better than $s_k$, i.e., further minimizing
-      $m_k$ with $\Vert d_k \Vert \leq \mu_1\Delta_k$.
+      $m_k$ with $\Vert d_k \Vert \leq \mu_1\Delta_k$,
+      and without leaving the bounds at $x_k + s_k$.
     \item Update $x_k$ and $\Delta_k$ using Trust Region rules.
   \end{enumerate}
 }
@@ -366,7 +380,7 @@ P(x) = max(min(x, u), l)
 dual(x) = norm(P(x - g(x)) - x)
 # Trust region
 tr = TrustRegion(SomeInitialValue)
-D() = get_property(tr, :radius)
+Δ() = get_property(tr, :radius)
 # Gradient step
 s(a) = P(x - a*g(x)) - x
 # Condition
