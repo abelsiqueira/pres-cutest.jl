@@ -21,4 +21,48 @@ in which one creates a significant test for which the current code fails, then
 writes sufficient codes to fix the test, without breaking any other tests, and
 then refactor the code clarifying or improving it.
 
-Usually, the tests are small parts of the larger code.
+Usually, the tests are very small so the code is also small.
+However, for optimization, there aren't very small parts, so our suggestion is
+to use problems as tests.
+First, we consider only the smallest and simplest tests that our algorithm needs
+to solve. If our algorithm can't solve these, than it isn't working.
+Second, we choose classes of problems. These may also be necessary, but they may
+begin to reveal deficiencies on our code (such as convexity requirements).
+Here we can also incrementally consider larger problems.
+Lastly, we choose CUTEst problems we'd like to solve. Some may be simple and
+required, some may not. This last step is usually what goes into a paper, for
+instance.
+
+In addition to the mention problems, we also need to consider correctness of the
+algorithm. For instance, it should not run forever, or it must obey hard
+constraints, etc. Small problems are best here to test these conditions.
+After it is working and it is right, we make it fast. For that we have to
+consider the usual computational aspects, such as dense matrices and array
+reuse.
+
+An outline is as follows. Find a test library. In our case, we're using
+FactCheck from the Julia language.
+Select tests that our algorithm is required to solve. These should be very small
+and very simple.
+After selecting one, or a few, of these problems, we write sufficient code that
+is a description of the method and that correctly solves these problems.
+In this step, the method should be greatly simplified to allow the quick
+construction of the code.
+Repeat until you're satisfied.
+Then, it is best to write the limitation codes now.
+After that, write the classes of problems in the same manner. Here is probably
+where you'll start using more complex strategies inside your algorithm, and
+where you'll increase the sizes and feel the need to code optimization.
+Lastly, use CUTEst.
+When you're done, you can go back and scrub a little more.
+
+Now, about the framework.
+
+We decided that the Julia language is a great language for optimization.
+It is a high level and high performance language with great interface with C and
+Fortran.
+This made it a perfect combination for CUTEst, which I'll remind next.
+It also has great syntax, which it borrows from MatLab and Python, among others,
+and it can lead indirectly to good coding practices.
+
+Our framework consists of a few Julia packages, which provide ways to access
