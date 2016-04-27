@@ -106,6 +106,7 @@
 \myframectr{
   \begin{itemize}
     \item High level, High performance;
+    \item Open source, multiplatform;
     \item Great C/Fortran interface;
     \item Easy syntax;
     \item Good practices (git, automated testing, code coverage);
@@ -115,10 +116,10 @@
 \begin{frame}[fragile]
   \ctr{Framework}
   \begin{itemize}
-    \item Develop with \mintinline{julia}{Optimize.jl};
-    \item Create the tests with \mintinline{julia}{NLPModels.jl};
-    \item Easily access CUTEst with \mintinline{julia}{CUTEst.jl}.
-    \item Use \mintinline{julia}{LinearOperators.jl}, including a LBFGS
+    \item Develop with {\color{red} \mintinline{julia}{Optimize.jl}}
+    \item Create the tests with {\color{red} \mintinline{julia}{NLPModels.jl}};
+    \item Easily access CUTEst with {\color{red} \mintinline{julia}{CUTEst.jl}}.
+    \item Use {\color{red} \mintinline{julia}{LinearOperators.jl}}, including a LBFGS
       operator.
   \end{itemize}
 \end{frame}
@@ -193,7 +194,7 @@
   \begin{itemize}
     \item Easy to install;
     \item Easy to use;
-    \item Easy to build in stages.
+    \item Helps in many stages of the development.
   \end{itemize}
 }
 
@@ -214,7 +215,7 @@ CALL cutest_ufn(st, n, x, f)
 \begin{frame}[t,fragile]
   \ctr{CUTEst.jl}
   \begin{minted}{julia}
-Pkg.add("CUTEst") # Once
+Pkg.add("CUTEst") # Once (Eventually)
 \end{minted}
 \begin{minted}{julia}
 using CUTEst

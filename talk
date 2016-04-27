@@ -1,14 +1,16 @@
 Hello all, my name is Abel, I'm a professor at the Federal University of Paraná,
 in Brazil.
-This is a joint work with professor Orban, which is a culmination of our work
+This is a joint work with professor Orban, which is the culmination of our work
 with some Julia packages.
-I present a suggested workflow for writing optimization algorithms based on
+
+I'll present a suggested workflow for writing optimization algorithms based on
 agile methodology. Then, I present a framework composed of some packages we
 created for Julia, which are very useful. I present a little about CUTEst, which
 is where we did most work, and a practical example of the application of the the
 workflow using the framework.
 Finally I show some possible future projects.
 
+First, the workflow.
 The following quotes are a good description of the workflow.
 First, by Donald Knuth, which warns us of the priorities of software
 development, and below by Kent Beck, associated with the Agile methodology:
