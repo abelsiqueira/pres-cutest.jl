@@ -142,7 +142,7 @@
     \item Define \mintinline{julia}{AbstractNLPModel};
     \item Define \mintinline{julia}{JuMPNLPModel} and
       \mintinline{julia}{SimpleNLPModel};
-    \item AMPL and CUTEst are derived from it;
+    \item AMPL and CUTEst models are derived from it;
     \item Allows future models.
   \end{itemize}
 \end{frame}
@@ -154,7 +154,7 @@
   \node[draw,rectangle] (abstract) at (-4,0) {AbstractNLPModel};
   \node[draw,rectangle] (jumpnlp) at (0,1) {JuMPNLPModel};
   \node[draw,rectangle] (simple) at (0,-1) {SimpleNLPModel};
-  \node[red,draw,rectangle] (ampl) at (0,-2) {AmplNLPModel};
+  \node[red,draw,rectangle] (ampl) at (0,-2) {AmplModel};
   \node[red,draw,rectangle] (cutest) at (0,0) {CUTEstModel};
   \node[draw,rectangle] (opt) at (-4,-2) {Optimize};
   \node[dashed,draw,rectangle] (jump) at (4,1) {JuMP};
@@ -380,7 +380,7 @@ P(x) = max(min(x, u), l)
 dual(x) = norm(P(x - g(x)) - x)
 # Trust region
 tr = TrustRegion(SomeInitialValue)
-Δ() = get_property(tr, :radius)
+D() = get_property(tr, :radius)
 # Gradient step
 s(a) = P(x - a*g(x)) - x
 # Condition
