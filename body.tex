@@ -47,7 +47,7 @@
   \begin{itemize}
     \item Simplest representative problems;
     \item Classes of problems;
-    \item Selection of CUTEst problems.
+    \item Selection of problems from some specific repository.
   \end{itemize}
 }
 
@@ -82,7 +82,7 @@
       \item Write simplest code solving it (theory \yes, efficiency \no);
       \item Repeat
     \end{enumerate}
-    \item<3-> Write the limitation tests (time and iteration) and codes;
+    \item<3-> Write limitation tests (time, iteration, etc.) and code for it;
     \item<4->
     \begin{enumerate}
       \item Write class os problems (hundreds of runs, randomized, larger size);
@@ -91,7 +91,7 @@
     \end{enumerate}
     \item<5->
     \begin{enumerate}
-      \item Choose CUTEst problem;
+      \item Choose problems from specific repository;
       \item Try to solve it;
       \item Repeat
     \end{enumerate}
@@ -119,8 +119,6 @@
     \item Develop with {\color{red} \mintinline{julia}{Optimize.jl}}
     \item Create the tests with {\color{red} \mintinline{julia}{NLPModels.jl}};
     \item Easily access CUTEst with {\color{red} \mintinline{julia}{CUTEst.jl}}.
-    \item Use {\color{red} \mintinline{julia}{LinearOperators.jl}}, including a LBFGS
-      operator.
   \end{itemize}
 \end{frame}
 
@@ -336,8 +334,12 @@ Hv = hprod(nlp, x, v)
   \ctr{Simplest problems}
   \begin{itemize}
     \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2)$;
-    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $1 \leq x_1,x_2 \leq
-      2$;
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $1 \leq x_1,x_2 \leq 2$;
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $-1 \leq x_1,x_2 \leq 2$;
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $-1 \leq x_1
+      \leq 1, \ 1 \leq x_2 \leq 2$;
+    \item $\min \ f(x) = \frac{1}{2}(x_1^2 + x_2^2),$ subject to $0 \leq x_1
+      \leq 1, \ 1 \leq x_2 \leq 2$;
     \item Rosenbrock with and without bounds;
   \end{itemize}
 }
@@ -346,15 +348,17 @@ Hv = hprod(nlp, x, v)
   \ctr{Minimum implementation}
   \begin{enumerate}
     \item Use $B_k = \nabla^2f(x_k)$;
+    \item Use simple backtracking to find $s_k$;
     \item Use $d_k = s_k$;
-    \item Trust Region is already implemented, not exactly the same, but
-      similar.
+    \item Use the Trust Region implemented in the framework (similar enough).
   \end{enumerate}
 }
 
-\begin{frame}[t,fragile]
+\begin{frame}[t,fragile,allowframebreaks]
   \ctr{FactCheck}
-  \begin{minted}[fontsize=\scriptsize]{julia}
+  \begin{minted}{julia}
+using FactCheck
+
 facts("Simple test") do
   x0 = [1.2; 1.8]
   f(x) = dot(x,x)/2
@@ -362,7 +366,8 @@ facts("Simple test") do
   H(x) = eye(2)
   l = [1.0; 1.0]
   u = [2.0; 2.0]
-  nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar=l, uvar=u)
+  nlp = SimpleNLPModel(x0, f, grad=g, hess=H, lvar=l,
+    uvar=u)
 
   x, fx, dual = tron(nlp)
   @fact x --> roughly(l)
@@ -372,21 +377,39 @@ end
 \end{minted}
 \end{frame}
 
-\begin{frame}[t,fragile]
-  \ctr{Implementation}
-  \begin{minted}[fontsize=\small]{julia}
-# Projection
-P(x) = max(min(x, u), l)
-# Optimality
-dual(x) = norm(P(x - g(x)) - x)
-# Trust region
-tr = TrustRegion(SomeInitialValue)
-D() = get_property(tr, :radius)
-# Gradient step
-s(a) = P(x - a*g(x)) - x
-# Condition
-q(d) = 0.5*dot(d,H(x)*d) + dot(d,g(x))
-cond(s) = q(s) <= mu0*dot(g(x),s) && norm(s) <= mu1*D()
+\begin{frame}[t,fragile,allowframebreaks]
+  \ctr{Minimum implementation}
+\begin{minted}{julia}
+function tron(nlp; m0 = 1e-2, m1 = 1.0)
+  f(x) = obj(nlp, x)
+  g(x) = grad(nlp, x)
+  H(x) = hess(nlp, x)
+
+  P(x) = max(min(x, u), l)
+  dual(x) = norm(P(x - g(x)) - x)
+
+  tr = TrustRegion(100.0)
+  D() = get_property(tr, :radius)
+
+  x = nlp.meta.x0
+  while dual(x) > 1e-6
+    q(d) = 0.5*dot(d, H(x) * d) + dot(d, g(x))
+    s(a) = P(x - a*g(x)) - x
+
+    a = 1
+    while q(s(a)) > m0*dot(g(x), s(a)) ||
+        norm(s(a)) > m1*D()
+      a *= 0.9
+    end
+    xp = x + s(a)
+    rho = ratio(f(x), f(xp), q(xp-x))
+    if acceptable(tr, rho)
+      x = xp
+    end
+    update!(tr, rho, norm(s(a)))
+  end
+  return x, f(x), dual(x)
+end
 \end{minted}
 \end{frame}
 
@@ -426,10 +449,7 @@ x0 = 10*ones(10)
 \begin{frame}[fragile]
   \ctr{Improvements}
   \begin{itemize}
-    \item Use \mintinline{julia}{LinearOperators.jl}, such as
-      \mintinline{julia}{H = LinearOperator(n, Float64, v -> hprod(nlp, x, v))}
-      or
-      \mintinline{julia}{H = LBFGSOperator(n, mem)}
+    \item Matrix-free (hprod instead of hess);
     \item Store repeated function calls;
     \item Use inplace operations;
   \end{itemize}
